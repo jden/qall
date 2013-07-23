@@ -71,6 +71,28 @@ qall.some = function () {
   })
 }
 
+qall.someSerial = function () {
+  var terms = toArray.call(arguments)
+  if (!terms.length) {
+    return PReject(new Error('Must have terms'))
+  }
+  var head = terms[0]
+  var remainder = terms.slice(1)
+  return new Promise(function (resolve, reject) {
+    P(head).then(function (val) {
+      if (val) {
+        resolve(true)
+      } else {
+        if (remainder.length) {
+          qall.someSerial.apply(qall, remainder).then(resolve, reject)
+        } else {
+          resolve(false)
+        }
+      }
+    }, reject)
+  })
+}
+
 // ∀x
 qall.every = function () {
   var terms = toArray.call(arguments).map(P)
@@ -95,14 +117,14 @@ qall.every = function () {
 }
 
 qall.everySerial = function () {
-  var terms = toArray.call(arguments).map(P)
+  var terms = toArray.call(arguments)
   if (!terms.length) {
     return PReject(new Error('Must have terms'))
   }
-  var next = terms[0]
+  var head = terms[0]
   var remainder = terms.slice(1)
   return new Promise(function (resolve, reject) {
-    next.then(function (val) {
+    P(head).then(function (val) {
       if (!val) {
         resolve(false)
       } else {
@@ -112,7 +134,7 @@ qall.everySerial = function () {
           resolve(true)
         }
       }
-    })
+    }, reject)
   })
 }
 

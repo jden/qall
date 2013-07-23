@@ -6,24 +6,31 @@ chai.use(require('sinon-chai'))
 var Promise = require('promise')
 var K = require('ski/k')
 
+// TODO: break this out into its own module
+var callOrder = 0
 var LazyPStub = function (val) {
   var called = false
 
-  return {
+  var stub = {
     then: function (res, rej) {
       called = true
+      stub.order = callOrder
+      callOrder++
       process.nextTick(function () {
         res(val)
       })
     },
     called: function () {
       return called
+    },
+    calledBefore: function (otherStub) {
+      return called && (!otherStub.called() || stub.order < otherStub.order)
     }
   }
+
+  return stub;
 }
 
-var xit = function () {}
-var xdescribe = function () {}
 
 describe('qall combinators', function () {
 
@@ -82,9 +89,8 @@ describe('qall combinators', function () {
       var t3 = LazyPStub(true)
 
       everySerial(t1, t2, t3).then(function () {
-        t1.called().should.equal(true)
-        t2.called().should.equal(true)
-        t3.called().should.equal(false)
+        t1.calledBefore(t2).should.equal(true)
+        t2.calledBefore(t3).should.equal(true)
       }).then(done, done)
     })
 
@@ -100,9 +106,22 @@ describe('qall combinators', function () {
       }).then(done, done)
     })
 
+    it('is rejected if any of the executed terms is rejected', function (done) {
+      var err = new Error('foo')
+      var t1 = P(true)
+      var t2 = PReject(err)
+
+      everySerial(t1, t2).then(function () {
+        done(new Error('should not resolve'))
+      }, function (e) {
+        e.should.equal(err)
+        done()
+      })
+    })
+
   })
 
-  xdescribe('someSerial', function () {
+  describe('someSerial', function () {
     var someSerial = qall.someSerial
 
     it('is rejected if there are no terms', function (done) {
@@ -112,8 +131,8 @@ describe('qall combinators', function () {
     })
 
     it('resolves true if any of the terms is true', function (done) {
-      var t1 = K(P(false))
-      var t2 = K(P(true))
+      var t1 = P(false)
+      var t2 = P(true)
 
       someSerial(t1, t2).then(function (val) {
         val.should.equal(true)
@@ -121,8 +140,8 @@ describe('qall combinators', function () {
     })
 
     it('resolves false if all of the terms are false', function (done) {
-      var t1 = K(P(false))
-      var t2 = K(P(false))
+      var t1 = P(false)
+      var t2 = P(false)
 
       someSerial(t1, t2).then(function (val) {
         val.should.equal(false)
@@ -130,33 +149,32 @@ describe('qall combinators', function () {
     })
 
     it('executes terms in serial', function (done) {
-      var t1 = sinon.stub().returns(P(false))
-      var t2 = sinon.stub().returns(P(false))
-      var t3 = sinon.stub().returns(P(false))
+      var t1 = LazyPStub(false)
+      var t2 = LazyPStub(false)
+      var t3 = LazyPStub(true)
 
       someSerial(t1, t2, t3).then(function () {
-        t1.should.have.been.called
-        t2.should.have.been.calledAfter(t1)
-        t3.should.have.been.calledAfter(t2)
+        t1.calledBefore(t2).should.equal(true)
+        t2.calledBefore(t3).should.equal(true)
       }).then(done, done)
     })
 
     it('only executes terms necessary', function (done) {
-      var t1 = sinon.stub().returns(P(false))
-      var t2 = sinon.stub().returns(P(true))
-      var t3 = sinon.stub().returns(P(false))
+      var t1 = LazyPStub(false)
+      var t2 = LazyPStub(true)
+      var t3 = LazyPStub(true)
 
       someSerial(t1, t2, t3).then(function () {
-        t1.should.have.been.called
-        t2.should.have.been.calledAfter(t1)
-        t3.should.not.have.been.caled
+        t1.called().should.equal(true)
+        t2.called().should.equal(true)
+        t3.called().should.equal(false)
       }).then(done, done)
     })
 
     it('is rejected if any of the executed terms is rejected', function (done) {
       var err = new Error('foo')
-      var t1 = sinon.stub().returns(P(false))
-      var t2 = sinon.stub().returns(PReject(err))
+      var t1 = P(false)
+      var t2 = PReject(err)
 
       someSerial(t1, t2).then(function () {
         done(new Error('should not resolve'))

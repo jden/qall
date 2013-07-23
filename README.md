@@ -29,6 +29,22 @@ qall(assertEq,
 `qall : (fn: Function, ...args: Promise|Any) => Promise`
 resolved with the return value of `fn`
 
+### combinators
+
+`qall` includes boolean logic combinators which operate on promises:
+
+`qall.some : (...terms : Promise<Boolean>) => Promise<Boolean>`
+
+`qall.every : (...terms : Promise<Boolean>) => Promise<Boolean>`
+
+`qall.not : (term : Promise<Boolean>) => Promise<Boolean>`
+
+For explicit ordering control, for use with Lazy Promises:
+
+`qall.someSerial : (...terms : Promise<Boolean>) => Promise<Boolean>`
+
+`qall.everySerial : (...terms : Promise<Boolean>) => Promise<Boolean>`
+
 
 ## installation
 
