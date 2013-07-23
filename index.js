@@ -5,6 +5,11 @@ var P = function (x) {
     resolve(x)
   })
 }
+var PReject = function (x) {
+  return new Promise(function (resolve, reject) {
+    reject(x)
+  })
+}
 
 function qall (fn) {
   var ctx = this
@@ -37,6 +42,88 @@ function qall (fn) {
 
   })
 
+}
+
+// combinators
+
+var toArray = Array.prototype.slice
+
+// ∃x
+qall.some = function () {
+  var terms = toArray.call(arguments).map(P)
+  if (!terms.length) {
+    return PReject(new Error('Must have terms'))
+  }
+  var remaining = terms.length
+  return new Promise(function (resolve, reject) {
+    terms.forEach(function (term) {
+      term.then(function (val) {
+        if (val) {
+          resolve(true)
+        } else {
+          remaining--
+          if (!remaining) {
+            resolve(false)
+          }
+        }
+      }, reject)
+    })
+  })
+}
+
+// ∀x
+qall.every = function () {
+  var terms = toArray.call(arguments).map(P)
+  if (!terms.length) {
+    return PReject(new Error('Must have terms'))
+  }
+  var remaining = terms.length
+  return new Promise(function (resolve, reject) {
+    terms.forEach(function (term) {
+      term.then(function (val) {
+        if (!val) {
+          resolve(false)
+        } else {
+          remaining--
+          if (!remaining) {
+            resolve(true)
+          }
+        }
+      }, reject)
+    })
+  })
+}
+
+qall.everySerial = function () {
+  var terms = toArray.call(arguments).map(P)
+  if (!terms.length) {
+    return PReject(new Error('Must have terms'))
+  }
+  var next = terms[0]
+  var remainder = terms.slice(1)
+  return new Promise(function (resolve, reject) {
+    next.then(function (val) {
+      if (!val) {
+        resolve(false)
+      } else {
+        if (remainder.length) {
+          qall.everySerial.apply(qall, remainder).then(resolve, reject)
+        } else {
+          resolve(true)
+        }
+      }
+    })
+  })
+}
+
+// ¬x
+qall.not = function (term) {
+  if (!term) {
+    return PReject(new Error('Must have term'))
+  }
+  return P(term).then(function (t) {
+    return !t
+  })
 }
 
 module.exports = qall

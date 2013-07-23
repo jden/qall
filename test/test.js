@@ -93,4 +93,5 @@ describe('qall', function () {
     })
     .then(done, done)
   })
+
 })
