@@ -45,6 +45,12 @@ For explicit ordering control, for use with Lazy Promises:
 
 `qall.everySerial : (...terms : Promise<Boolean>) => Promise<Boolean>`
 
+### Array utils
+
+`qall.map : (Array<T>|Promise<Array<T>>, (T)=>T2|(T)=>Promise<T2>) => Promise<Array<T2>>`
+
+`qall.filter : (Array<T>|Promise<Array<T>>, (T)=>Boolean|(T)=>Promise<Boolean>) => Promise<Array<T>>`
+
 
 ## installation
 
