@@ -14,7 +14,7 @@ var PReject = function (x) {
 function qall (fn) {
   var ctx = this
   if (typeof fn !== 'function') {
-    throw new Error('first argument must be a function')
+    throw new TypeError('first argument must be a function')
   }
 
   var args = Array.prototype.slice.call(arguments, 1)
@@ -52,7 +52,7 @@ var toArray = Array.prototype.slice
 qall.some = function () {
   var terms = toArray.call(arguments).map(P)
   if (!terms.length) {
-    return PReject(new Error('Must have terms'))
+    return PReject(new TypeError('Must have terms'))
   }
   var remaining = terms.length
   return new Promise(function (resolve, reject) {
@@ -74,7 +74,7 @@ qall.some = function () {
 qall.someSerial = function () {
   var terms = toArray.call(arguments)
   if (!terms.length) {
-    return PReject(new Error('Must have terms'))
+    return PReject(new TypeError('Must have terms'))
   }
   var head = terms[0]
   var remainder = terms.slice(1)
@@ -119,7 +119,7 @@ qall.every = function () {
 qall.everySerial = function () {
   var terms = toArray.call(arguments)
   if (!terms.length) {
-    return PReject(new Error('Must have terms'))
+    return PReject(new TypeError('Must have terms'))
   }
   var head = terms[0]
   var remainder = terms.slice(1)
@@ -141,12 +141,80 @@ qall.everySerial = function () {
 // ¬x
 qall.not = function (term) {
   if (!term) {
-    return PReject(new Error('Must have term'))
+    return PReject(new TypeError('Must have term'))
   }
   return P(term).then(function (t) {
     return !t
   })
 }
+
+// Array utils
+
+// (Array<T>|Promise<Array<T>>, (T)=>Boolean|(T)=>Promise<Boolean>) => Promise<Array<T>>
+qall.filter = function (arr, fn) {
+
+  if (!arr) {
+    return PReject(new TypeError('Must have array'))
+  }
+  if (typeof fn !== 'function') {
+    return PReject(new TypeError('fn must be a Function'))
+  }
+
+  return P(arr).then(function (arr) {
+    if (!Array.isArray(arr)) {
+      throw new TypeError('arr must be an Array')
+    }
+
+    return new Promise(function (r, t) {
+      qall.map(arr, fn)
+        .then(function (keep) {
+          r(arr.filter(function (el, i) {
+            return keep[i]
+          }))
+        }, t)
+    })
+
+  })
+}
+
+// (Array<T>|Promise<Array<T>>, (T)=>T2|(T)=>Promise<T2>) => Promise<Array<T2>>
+qall.map = function (arr, fn) {
+  if (!arr) {
+    return PReject(new TypeError('Must have array'))
+  }
+  if (typeof fn !== 'function') {
+    return PReject(new TypeError('fn must be a Function'))
+  }
+
+  return P(arr).then(function (arr) {
+    if (!Array.isArray(arr)) {
+      throw new TypeError('arr must be an Array')
+    }
+
+    var remaining = arr.length
+    return new Promise(function (r, t) {
+
+      var mapped = arr.map(function (el, i) {
+        return P(fn(el)).then(function (elMapped) {
+          remaining--
+          mapped[i] = elMapped
+          if (!remaining) {
+            done()
+          }
+        }, t)
+      })
+
+      function done() {
+        r(mapped)
+      }
+      if (!arr.length) {
+        r(mapped)
+      }
+    })
+
+  })
+}
+
 
 module.exports = qall
 module.exports.P = P
