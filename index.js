@@ -64,8 +64,7 @@ qall.join = function () {
   return Promise(function (r, t) {
     var remaining = args.length
     args = args.map(function (arg, i) {
-      return P(arg).then(function (val) {
-        args[i] = val
+      return P(arg).then(function () {
         remaining--
         if (!remaining) {
           r()

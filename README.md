@@ -54,7 +54,7 @@ resolved with the return value of `fn`
 Wraps a `fn` to let any of its args be a promise. That is, it
 curries `qall` with the `fn` parameter.
 
-`qall.join : (...Promise) => Promise`
+`qall.join : (...Promise || Array<Promise>) => Promise`
 joins multiple threads of execution and returns a promise
 
 ### combinators
