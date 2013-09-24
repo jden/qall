@@ -94,6 +94,19 @@ describe('qall', function () {
     .then(done, done)
   })
 
+    it('catches thrown errors into rejections', function (done) {
+      var add = function (a, b) {
+        throw new Error('foo')
+      }
+
+      qall(add, 1, 2).then(function (val) {
+        throw new Error('should not resolve')
+      }, function (err) {
+        err.message.should.equal('foo')
+      })
+      .then(done, done)
+    })
+
   describe('.await', function () {
     it('wraps a fn to let any of its args be a promise', function (done) {
       // that is, it curries `qall` with the `fn` parameter

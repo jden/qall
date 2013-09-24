@@ -33,10 +33,18 @@ function qall (fn) {
     })
 
     function done() {
-      r(fn.apply(ctx, args))
+      try {
+        r(fn.apply(ctx, args))
+      } catch (err) {
+        t(err)
+      }
     }
     if (!args.length) {
-      r(fn.call(ctx))
+      try {
+        r(fn.call(ctx))
+      } catch (err) {
+        t(err)
+      }
     }
 
   })
