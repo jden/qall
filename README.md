@@ -29,6 +29,10 @@ qall(assertEq,
 `qall : (fn: Function, ...args: Promise|Any) => Promise`
 resolved with the return value of `fn`
 
+`qall.await : (fn: Function<T>) => Function<Promise<T>>`
+Wraps a `fn` to let any of its args be a promise. That is, it
+curries `qall` with the `fn` parameter.
+
 ### combinators
 
 `qall` includes boolean logic combinators which operate on promises:

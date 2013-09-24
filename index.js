@@ -19,7 +19,6 @@ function qall (fn) {
 
   var args = Array.prototype.slice.call(arguments, 1)
 
-
   return Promise(function (r, t) {
 
     var remaining = args.length
@@ -42,6 +41,14 @@ function qall (fn) {
 
   })
 
+}
+
+qall.await = function (fn) {
+  return function () {
+    var args = Array.prototype.slice.call(arguments)
+    args.unshift(fn)
+    return qall.apply(this, args)
+  }
 }
 
 // combinators

@@ -94,4 +94,21 @@ describe('qall', function () {
     .then(done, done)
   })
 
+  describe('.await', function () {
+    it('wraps a fn to let any of its args be a promise', function (done) {
+      // that is, it curries `qall` with the `fn` parameter
+
+      var add = function (a, b) {
+        return a + b
+      }
+
+      var addAsync = qall.await(add)
+
+      addAsync(1, P(5)).then(function (val) {
+        val.should.equal(6)
+      })
+      .then(done, done)
+    })
+  })
+
 })
