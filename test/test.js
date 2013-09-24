@@ -124,4 +124,21 @@ describe('qall', function () {
     })
   })
 
+  describe('.join', function () {
+    it('joins multiple threads of execution and returns a promise', function (done) {
+      var a = P(1).then(function () { a.resolved = true })
+      var b = P(2).then(function () { b.resolved = true })
+      var c = P(3).then(function () { c.resolved = true })
+
+      qall.join(a, b, c)
+        .then(function (val) {
+          chai.expect(val).to.equal(undefined)
+          a.resolved.should.equal(true)
+          b.resolved.should.equal(true)
+          c.resolved.should.equal(true)
+        })
+        .then(done, done)
+    })
+  })
+
 })

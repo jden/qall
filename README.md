@@ -4,6 +4,8 @@ lift functions of any arity into a Promises/A+ chain
 ## usage example
 ```js
 var qall = require('qall')
+var await = require('qall').await
+var join = require('qall').join
 
 function assertEq(x, y) {
     if(x !== y) {
@@ -11,6 +13,8 @@ function assertEq(x, y) {
     }
 }
 
+// qall lets us not care whether `hashPass` and `checkHashInDB` are
+// sync or async
 qall(assertEq,
   hashPass(pass)
   checkHashInDB(user)
@@ -20,6 +24,23 @@ qall(assertEq,
   }, function () {
     console.log('invalid user or pass')
   })
+
+// with `await`, we can curry the function argument of `qall`
+var assertEqAsync = qall.await(assertEq)
+
+assertEqAsync(hashPass(pass), checkHashInDB(user))
+  .then(function () {
+    console.log('ok!')
+  }, function () {
+    console.log('invalid user or pass')
+  })
+
+
+qall.join(a, b, c).then(function () {
+  // a b and c are just side effects
+  // here we just want to continue once they're resolved
+})
+
 ```
 
 
@@ -32,6 +53,9 @@ resolved with the return value of `fn`
 `qall.await : (fn: Function<T>) => Function<Promise<T>>`
 Wraps a `fn` to let any of its args be a promise. That is, it
 curries `qall` with the `fn` parameter.
+
+`qall.join : (...Promise) => Promise`
+joins multiple threads of execution and returns a promise
 
 ### combinators
 

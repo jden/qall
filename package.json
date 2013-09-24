@@ -1,7 +1,7 @@
 {
   "name": "qall",
   "author": "jden <jason@denizac.org>",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "lift functions of arity > 1 into a Promises/A+ chain",
   "keywords": [
     "Promises/A+",
