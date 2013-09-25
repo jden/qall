@@ -60,10 +60,17 @@ qall.await = function (fn) {
 }
 
 qall.join = function () {
-  var args = Array.prototype.slice.call(arguments)
+  var args = Array.prototype.slice.call(arguments).reduce(function (args, arg) {
+    // flatten
+    args = args.concat(arg)
+    return args
+  }, [])
+
   return Promise(function (r, t) {
     var remaining = args.length
-    args = args.map(function (arg, i) {
+    if (!remaining) { r() }
+
+    args.map(function (arg, i) {
       return P(arg).then(function () {
         remaining--
         if (!remaining) {

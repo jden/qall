@@ -163,6 +163,14 @@ describe('qall', function () {
         .then(done, done)
     })
 
+    it('joins null', function (done) {
+      qall.join().then(done, done)
+    })
+
+    it('joins empty array', function (done) {
+      qall.join([]).then(done, done)
+    })
+
   })
 
 })
