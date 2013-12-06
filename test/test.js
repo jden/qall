@@ -1,19 +1,11 @@
 var chai = require('chai')
 chai.should()
-var Promise = require('promise')
+var Promise = require('bluebird')
 var sinon = require('sinon')
 chai.use(require('sinon-chai'))
-
-var P = function (x) {
-  return new Promise(function (resolve) {
-    resolve(x)
-  })
-}
-var R = function (x) {
-  return new Promise(function (resolve, reject) {
-    reject(x)
-  })
-}
+Promise.longStackTraces()
+var P = Promise.resolve
+var R = Promise.reject
 
 describe('qall', function () {
   var qall = require('../')
@@ -128,10 +120,10 @@ describe('qall', function () {
     it('joins multiple threads of execution and returns a promise', function (done) {
       var a = P(1).then(function () { a.resolved = true })
       var b = P(2).then(function () { b.resolved = true })
-      var c = Promise(function (resolve) {
+      var c = new Promise(function (resolve) {
         setTimeout(function (){
           resolve(3)
-        }, 10)
+        }, 1)
       })
       c.then(function () { c.resolved = true })
 

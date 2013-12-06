@@ -1,6 +1,6 @@
 var chai = require('chai')
 chai.should()
-var Promise = require('promise')
+var Promise = require('bluebird')
 var sinon = require('sinon')
 chai.use(require('sinon-chai'))
 

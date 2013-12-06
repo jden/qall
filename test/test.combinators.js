@@ -3,7 +3,7 @@ chai.should()
 chai.use(require('chai-interface'))
 var sinon = require('sinon')
 chai.use(require('sinon-chai'))
-var Promise = require('promise')
+var Promise = require('bluebird')
 var K = require('ski/k')
 
 // TODO: break this out into its own module
