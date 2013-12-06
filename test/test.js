@@ -165,4 +165,36 @@ describe('qall', function () {
 
   })
 
+  describe('.spread', function () {
+    it('destructures an array of promises', function (done) {
+      var a = P(1)
+      var b = P(2)
+
+      qall.spread([a,b], function (a, b) {
+        a.should.equal(1)
+        b.should.equal(2)
+      })
+      .then(done, done)
+    })
+    it('is rejected if first argument is not an array', function (done) {
+      qall.spread(4, function (x) {
+      })
+      .then(function () {
+        throw new Error('should not be fulfilled')
+      }, function (x) {
+        x.should.be.instanceof(TypeError)
+      })
+      .finally(done)
+    })
+    it('is rejected if second argument is not a function', function (done) {
+      qall.spread([])
+      .then(function () {
+        throw new Error('should not be fulfilled')
+      },function (x) {
+        x.should.be.instanceof(TypeError)
+      })
+      .finally(done)
+    })
+  })
+
 })

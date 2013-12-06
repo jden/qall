@@ -49,6 +49,7 @@ function qall (fn) {
 }
 
 qall.await = function (fn) {
+
   return function () {
     var args = Array.prototype.slice.call(arguments)
     args.unshift(fn)
@@ -74,6 +75,18 @@ qall.join = function () {
         }
       }, t)
     })
+  })
+}
+
+qall.spread = function (promises, fn) {
+  if (!Array.isArray(promises)) {
+    return Promise.reject(new TypeError('promises must be an array'))
+  }
+  if (typeof fn !== 'function') {
+    return Promise.reject(new TypeError('fn must be a function'))
+  }
+  return Promise.all(promises).then(function (x) {
+    return fn.apply(null, x)
   })
 }
 

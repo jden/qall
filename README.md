@@ -41,6 +41,11 @@ qall.join(a, b, c).then(function () {
   // here we just want to continue once they're resolved
 })
 
+qall.spread([a, b, c], function (a, b, c) {
+  // some fn
+})
+.then(foo)
+
 ```
 
 
@@ -56,6 +61,11 @@ curries `qall` with the `fn` parameter.
 
 `qall.join : (...Promise || Array<Promise>) => Promise`
 joins multiple threads of execution and returns a promise
+
+`qall.spread : (Array<Promise>, Function) => Promise`
+Waits for all of the promises in an array to be fulfilled and
+applies the resolved values to a function. Returns a promise for
+this value.
 
 ### combinators
 
